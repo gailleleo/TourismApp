@@ -1383,7 +1383,7 @@
             this.tabPage4.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tabPage4.Size = new System.Drawing.Size(1469, 907);
             this.tabPage4.TabIndex = 3;
-            this.tabPage4.Text = "tabPage4";
+            this.tabPage4.Text = "Tourist Profile";
             // 
             // DGVViewDetailsHistory
             // 
@@ -1803,7 +1803,7 @@
             this.tabPage5.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tabPage5.Size = new System.Drawing.Size(1469, 907);
             this.tabPage5.TabIndex = 4;
-            this.tabPage5.Text = "tabPage5";
+            this.tabPage5.Text = "Scan QR";
             // 
             // label40
             // 
@@ -2322,7 +2322,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.DarkKhaki;
+            this.BackColor = System.Drawing.Color.LightCyan;
             this.ClientSize = new System.Drawing.Size(1745, 811);
             this.Controls.Add(this.MenuQRScanner);
             this.Controls.Add(this.MenuRegTouristAll);
