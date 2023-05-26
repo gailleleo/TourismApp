@@ -14,6 +14,7 @@ using AForge.Video.DirectShow;
 using ZXing;
 using static System.Net.WebRequestMethods;
 using System.Reflection.Emit;
+using System.Windows.Controls;
 
 namespace TourismApp
 {
@@ -23,6 +24,13 @@ namespace TourismApp
         {
             InitializeComponent();
         }
+
+        private static bool isEditMode = false;
+        private static string editId = "";
+
+
+        private static bool isEditModePlace = false;
+        private static string editIdPlace = "";
 
         FilterInfoCollection filterInfoCollection;
         VideoCaptureDevice captureDevice;
@@ -124,14 +132,16 @@ namespace TourismApp
         private void clearDetails()
         {
 
-            //dispFName.Clear();
-            //dispLName.ResetText();
-            //dispDob.ResetText();
-            //dispEmail.ResetText();
-            //dispNationality.ResetText();
-            //dispPhone.ResetText();   
-            //dispTid.ResetText();
-            //dispSex.ResetText();
+
+            txtBoxTouristFName.Text = "";
+            txtBoxTouristLName.Text = "";
+            txtBoxTouristEmail.Text = "";
+            txtBoxTouristPhone.Text = "";
+            txtBoxTouristType.Text = "";
+            txtBoxTouristLSex.Text = "";
+            txtBoxTouristNationality.Text = "";
+            dtdob.Text = "";
+
         }
 
         private void UpdateRegisteredDetails()
@@ -161,16 +171,43 @@ namespace TourismApp
 
         private void regconfirmdetails_Click(object sender, EventArgs e)
         {
-            string txtquery = "INSERT into Tourists (id, FirstName, LastName, Sex, DOB, Nationality, Email, Phone, DateAdded, Archive, Type ) values ('" + generatedSessionID + "', '" + txtBoxTouristFName.Text + "', '" + txtBoxTouristLName.Text + "', '" + txtBoxTouristLSex.Text + "',  '" + dtdob.Text + "', '" + txtBoxTouristNationality.Text + "', '" + txtBoxTouristEmail.Text + "', '" + txtBoxTouristPhone.Text + "', '" + DateTime.Now + "', '" + 0 + "', '" + txtBoxTouristType.Text + "')";
+            string txtquery = "";
+
+
+
+            if (isEditMode)
+            {
+                
+                txtquery = "UPDATE Tourists set FirstName  = '" + dispFName.Text + "', LastName  = '" + dispLName.Text + "',  Sex  = '" + dispSex.Text + "',  DOB  = '" + dispDob.Text + "',  Nationality  = '" + dispNationality.Text + "',  Email  = '" + dispEmail.Text + "',  Type  = '" + dispType.Text + "', DateUpdated =  '" + DateTime.Now + "'  WHERE id = '" + editId + "' ";
+            } else
+            {
+                 txtquery = "INSERT into Tourists (id, FirstName, LastName, Sex, DOB, Nationality, Email, Phone, DateAdded, DateUpdated, Archive, Type ) values ('" + generatedSessionID + "', '" + txtBoxTouristFName.Text + "', '" + txtBoxTouristLName.Text + "', '" + txtBoxTouristLSex.Text + "',  '" + dtdob.Text + "', '" + txtBoxTouristNationality.Text + "', '" + txtBoxTouristEmail.Text + "', '" + txtBoxTouristPhone.Text + "', '" + DateTime.Now + "', '" + DateTime.Now + "', '" + 0 + "', '" + txtBoxTouristType.Text + "')";
+            }
+          
             InserIntoDB(txtquery);
             clearDetails();
             GenerateRandomID(8);
             hidethisPannels();////////
-            MessageBox.Show("User Succesfully Registered.", "Success");
+
+          
+
+            if (isEditMode)
+            {
+                MessageBox.Show("User Succesfully Updated.", "Success");
+            }
+            else
+            {
+                MessageBox.Show("User Succesfully Registered.", "Success");
+            }
+
+
+            isEditMode = false;
         }
 
         private void MenuRegPlace_Click(object sender, EventArgs e)
         {
+            RegisterPlaceButton.Text = "Register";
+          
             DashboardTab.SelectedIndex= 1;
             DGVRegisteredPlaces.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             loadRegisteredPlacesDGV();
@@ -185,7 +222,7 @@ namespace TourismApp
             sql_cmd = sql_con.CreateCommand();
 
             // Employee
-            string CommandText = "SELECT Name AS  Name, Address AS  Address  FROM Places";
+            string CommandText = "SELECT id, Name, Address FROM Places";
             sql_adptr = new SQLiteDataAdapter(CommandText, sql_con);
             DSPlace.Reset();
             sql_adptr.Fill(DSPlace);
@@ -216,15 +253,46 @@ namespace TourismApp
 
         private void MenuRegTourist_Click(object sender, EventArgs e)
         {
+            label10.Text = "Register Tourist";
+            RegisterButton.Text = "Register";
             DashboardTab.SelectedIndex = 0;
-            stopDevice();
+            //stopDevice();
         }
 
         private void RegisterPlaceButton_Click(object sender, EventArgs e)
         {
-            string txtquery = "INSERT into Places (Name, Address, DateAdded, Archive ) values ('" + txtBoxPlaceName.Text + "', '" + txtBoxPlaceAddress.Text + "', '" + DateTime.Now + "', '" + 0 + "')";
+            string txtquery;
+            if (isEditModePlace)
+            {
+                txtquery = "UPDATE Places set Name =  '" + txtBoxPlaceName.Text + "', Address =  '" + txtBoxPlaceAddress.Text + "', DateUpdated =  '" + DateTime.Now + "'   WHERE id = '" + editIdPlace + "'";
+            } else
+            {
+                 txtquery = "INSERT into Places (Name, Address, DateAdded, DateUpdated, Archive ) values ('" + txtBoxPlaceName.Text + "', '" + txtBoxPlaceAddress.Text + "', '" + DateTime.Now + "', '" + DateTime.Now + "', '" + 0 + "')";
+            }
+
+
+            if (isEditModePlace)
+            {
+
+                MessageBox.Show("Edit Success", "Success");
+            }
+            else
+            {
+                MessageBox.Show("Register Success", "Success");
+            }
+
+
+            isEditModePlace = false;
+
+
+
+            txtBoxPlaceName.Text = "";
+            txtBoxPlaceAddress.Text = "";
             InserIntoDB(txtquery);
             loadRegisteredPlacesDGV();
+
+            RegisterPlaceButton.Text = "Register";
+
         }
 
         private void MenuRegTouristAll_Click(object sender, EventArgs e)
@@ -238,7 +306,7 @@ namespace TourismApp
 
         private void DGVRegisteredTourist_Click(object sender, EventArgs e)
         {
-            selectedTouristID = DGVRegisteredTourist.SelectedRows[0].Cells[0].Value.ToString();
+         
         }
 
         private void BTNArchiveUser_Click(object sender, EventArgs e)
@@ -253,11 +321,11 @@ namespace TourismApp
 
                 if (ArchiveBTNState == 0)
                 {
-                    txtquery = "update Tourists set Archive = 1  WHERE id = '" + selectedTouristID + "'";
+                    txtquery = "update Tourists set Archive = 1, DateUpdated =  '" + DateTime.Now + "'   WHERE id = '" + selectedTouristID + "'";
                 }
                 else
                 {
-                    txtquery = "update Tourists set Archive = 0  WHERE id = '" + selectedTouristID + "'";
+                    txtquery = "update Tourists set Archive = 0, DateUpdated =  '" + DateTime.Now + "'    WHERE id = '" + selectedTouristID + "'";
                 }
 
 
@@ -551,7 +619,7 @@ namespace TourismApp
 
         private void updateVisitorHistory(string VisitorID)
         {
-            string txtquery = "INSERT into History (VisitorID, PlaceID, Time ) values ('" + VisitorID + "', '" + 1 + "', '" + DateTime.Now + "')";
+            string txtquery = "INSERT into History (VisitorID, PlaceID, Time ) values ('" + VisitorID + "', '" + placeId.Text + "', '" + DateTime.Now + "')";
             InserIntoDB(txtquery);
         
         }
@@ -613,11 +681,11 @@ namespace TourismApp
                 Result result = barcodeReader.Decode((Bitmap)pictureBox2.Image);
                 if (result != null) {
                    
-                        textBox1.Text = result.ToString();
+                        placeId.Text = result.ToString();
                     BTNAllowEntry.Show();
-                    queryUserData(textBox1.Text);
-                    generateQRView(textBox1.Text);
-                    QueryHistoryViewDetails2(textBox1.Text);
+                    queryUserData(placeId.Text);
+                    generateQRView(placeId.Text);
+                    QueryHistoryViewDetails2(placeId.Text);
                         timer1.Stop();
                         stopDevice();
                     
@@ -632,15 +700,26 @@ namespace TourismApp
 
         private void ScanQR_Click(object sender, EventArgs e)
         {
-            captureDevice = new VideoCaptureDevice(filterInfoCollection[comboBox1.SelectedIndex].MonikerString);
-            captureDevice.NewFrame += CaptureDevice_NewFrame;
-            captureDevice.Start();
-            timer1.Start();
+
+            if (!String.IsNullOrEmpty(placeId.Text))
+            {
+
+                captureDevice = new VideoCaptureDevice(filterInfoCollection[comboBox1.SelectedIndex].MonikerString);
+                captureDevice.NewFrame += CaptureDevice_NewFrame;
+                captureDevice.Start();
+                timer1.Start();
+            }
+            else
+            {
+                MessageBox.Show("Input Place Id First", "Error");
+            }
+
+
         }
 
         private void button3_Click_1(object sender, EventArgs e)
         {
-            updateVisitorHistory(textBox1.Text);
+            updateVisitorHistory(placeId.Text);
             BTNAllowEntry.Hide();
             ViewuserDetailsQR.Image = null; ;
 
@@ -653,6 +732,133 @@ namespace TourismApp
             ViewUserDetailsEmail.Text = "Waiting for Data";
             ViewUserDetailsPhone.Text = "Waiting for Data";
             ViewUserDetailsType.Text = "Waiting for Data";
+        }
+
+        private void button3_Click_2(object sender, EventArgs e)
+        {
+
+            label10.Text = "Edit Tourist Details";
+        
+            RegisterButton.Text = "Update";
+
+            txtBoxTouristFName.Text = ViewUserFname.Text;
+            txtBoxTouristLName.Text = ViewUserLname.Text;
+            txtBoxTouristEmail.Text = ViewUserEmail.Text;
+            txtBoxTouristPhone.Text = ViewUserPhone.Text;
+            txtBoxTouristType.Text = ViewUserType.Text;
+            txtBoxTouristLSex.Text = ViewUserSex.Text;
+            txtBoxTouristNationality.Text = ViewUserNationality.Text;
+            dtdob.Text = ViewUserDob.Text;
+
+            editId = ViewUserId.Text;
+            isEditMode = true;
+
+
+          
+
+
+
+            DashboardTab.SelectedIndex = 0;
+        }
+
+        private void delUser_Click(object sender, EventArgs e)
+        {
+            string txtquery;
+
+            if (!String.IsNullOrEmpty(selectedTouristID))
+            {
+                setConnection();
+                sql_con.Open();
+                sql_cmd = sql_con.CreateCommand();
+
+
+              if (MessageBox.Show("Please confirm before proceed" + "\n" + "Do you want to Continue ?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    txtquery = "DELETE FROM Tourists WHERE id = '" + selectedTouristID + "'";
+                }
+                else
+                {
+                    txtquery = "";
+                }
+               
+                InserIntoDB(txtquery);
+                loadRegisteredTouristDGV();
+            }
+            else
+            {
+                MessageBox.Show("Select a User first!", "Error");
+            }
+        }
+
+        private void edPlace_Click(object sender, EventArgs e)
+        {
+            isEditModePlace = true;
+
+            if (!String.IsNullOrEmpty(editIdPlace))
+            {
+
+                txtBoxPlaceName.Text = DGVRegisteredPlaces.SelectedRows[0].Cells[1].Value.ToString();
+                txtBoxPlaceAddress.Text = DGVRegisteredPlaces.SelectedRows[0].Cells[2].Value.ToString();
+
+                editIdPlace = DGVRegisteredPlaces.SelectedRows[0].Cells[0].Value.ToString();
+
+                RegisterPlaceButton.Text = "Update";
+            }
+            else
+            {
+                MessageBox.Show("Select a Place first!", "Error");
+            }
+
+
+        }
+
+        private void delPlace_Click(object sender, EventArgs e)
+        {
+            string txtquery;
+
+            if (!String.IsNullOrEmpty(editIdPlace))
+            {
+                setConnection();
+                sql_con.Open();
+                sql_cmd = sql_con.CreateCommand();
+
+
+                if (MessageBox.Show("Please confirm before proceed" + "\n" + "Do you want to Continue ?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    txtquery = "DELETE FROM Places WHERE id = '" + editIdPlace + "'";
+                }
+                else
+                {
+                    txtquery = "";
+                }
+
+                InserIntoDB(txtquery);
+                loadRegisteredPlacesDGV();
+            }
+            else
+            {
+                MessageBox.Show("Select a Place first!", "Error");
+            }
+        }
+
+        private void DGVRegisteredPlaces_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            editIdPlace = DGVRegisteredPlaces.SelectedRows[0].Cells[0].Value.ToString();
+        }
+
+        private void DGVRegisteredPlaces_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            editIdPlace = DGVRegisteredPlaces.SelectedRows[0].Cells[0].Value.ToString();
+        }
+
+        private void DGVRegisteredTourist_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            selectedTouristID = DGVRegisteredTourist.SelectedRows[0].Cells[0].Value.ToString();
+        }
+
+        private void DGVRegisteredTourist_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            selectedTouristID = DGVRegisteredTourist.SelectedRows[0].Cells[0].Value.ToString();
         }
     }
 }
